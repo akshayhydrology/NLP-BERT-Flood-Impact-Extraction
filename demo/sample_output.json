@@ -1,0 +1,58 @@
+{
+  "sentence_1": {
+    "text": "Heavy flooding caused major road closures in southeast Houston.",
+    "predicted_impacts": ["Road Transportation Issue"]
+  },
+  "sentence_2": {
+    "text": "Strong winds uprooted several trees and caused widespread power outages.",
+    "predicted_impacts": ["Tree Fall", "Power Outage"]
+  },
+  "sentence_3": {
+    "text": "Residents reported significant building damage after prolonged rainfall.",
+    "predicted_impacts": ["Building Damage"]
+  },
+  "sentence_4": {
+    "text": "Evacuations were ordered as water levels rose rapidly along the bayou.",
+    "predicted_impacts": ["Evacuation"]
+  },
+  "sentence_5": {
+    "text": "Electricity cut and debris impacts were widespread following the intense storm.",
+    "predicted_impacts": ["Debris Impact", "Power Outage"]
+  },
+  "sentence_6": {
+    "text": "Flights were cancelled at the Bush airport due to runway flooding.",
+    "predicted_impacts": ["Aviation Impact"]
+  },
+  "sentence_7": {
+    "text": "Shipping operations along the channel were temporarily halted due to high water levels.",
+    "predicted_impacts": ["Shipping Industry Impact"]
+  },
+  "sentence_8": {
+    "text": "Residents reported snakes and alligators moving into yards after the bayou overflowed.",
+    "predicted_impacts": ["Wildlife Encounter"]
+  },
+  "sentence_9": {
+    "text": "Multiple neighborhoods reported sewage backups and hygiene issues.",
+    "predicted_impacts": ["Water Contamination"]
+  },
+  "sentence_10": {
+    "text": "Industrial facilities in the energy corridor experienced temporary shutdowns during the storm.",
+    "predicted_impacts": ["Oil Industry"]
+  },
+  "sentence_11": {
+    "text": "Several people were treated for injuries after slipping in floodwater-covered streets.",
+    "predicted_impacts": ["Drowning Event", "Road Transportation Issue"]
+  },
+  "sentence_12": {
+    "text": "Several people reported trauma and PTSD during the extended flooding event.",
+    "predicted_impacts": ["Mental Health Issue"]
+  },
+  "sentence_13": {
+    "text": "Business owners in the downtown district reported major economic losses due to store closures.",
+    "predicted_impacts": ["Regular Business Loss"]
+  },
+  "sentence_14": {
+    "text": "Transit services were suspended across several routes because of flooded intersections.",
+    "predicted_impacts": ["Road Transportation Issue"]
+  }
+}

@@ -1,0 +1,237 @@
+============================================================
+Supplementary Code S1
+Comprehensive Pseudocode for the Flood Impact Extraction Pipeline
+============================================================
+
+# ----------------------------------------------------------
+# INPUT:
+#   - Raw news articles (2017–2024)
+#   - Annotated dataset: 1,875 manually labeled sentences
+#   - Augmented dataset: 1,125 sentences (backtranslation & paraphrasing)
+#   - Total labeled dataset: 3,000 sentences
+#   - Unlabeled sentence corpus: ~95,643 sentences
+#   - Custom Houston Gazetteer (Super Neighborhoods + landmarks)
+# OUTPUT:
+#   - Predicted flood-impact categories for each sentence
+#   - Article-level and neighborhood-level impact summaries
+# ----------------------------------------------------------
+
+
+============================================================
+1. DATA COLLECTION AND INITIAL CLEANING
+============================================================
+
+1.1 Collect news articles (n = 11,336)
+    - Source: NewsAPI.ai
+    - Locations:
+        • "Houston County, Texas, United States"
+        • "Houston (Houston, Texas), United States"
+
+1.2 Clean articles
+    FOR each article:
+        - Remove URLs, ads, copyright text, and author bios
+        - Remove newsroom location headers (to avoid false locations)
+        - Normalize whitespace and Unicode encoding
+        - Preserve publication date and article ID
+
+
+============================================================
+2. DUPLICATE ARTICLE REMOVAL USING JACCARD SIMILARITY
+============================================================
+
+2.1 Compute pairwise Jaccard similarity for all article pairs:
+        J(A,B) = |A ∩ B| / |A ∪ B|
+
+2.2 IF J(A,B) > 0.75:
+        - Mark the later article as duplicate
+
+2.3 Remove duplicates
+        - Unique articles retained = 5,565
+
+
+============================================================
+3. RULE-BASED AND EMBEDDING-BASED IMPACT SENTENCE FILTERING
+============================================================
+
+3.1 Stage 1 — Regex filtering (article-level)
+    - Apply regex patterns for flood-related nouns and verbs
+    - Retain flood-relevant articles
+    - Articles remaining: 3,212
+
+3.2 Stage 2 — Sentence segmentation
+    FOR each article:
+        - Split into sentences
+    Total sentences ≈ 95,643
+
+3.3 Stage 3 — ML-driven keyword expansion
+    - Fine-tune Word2Vec and Sentence-BERT (SBERT) on 3,212 articles
+    - Seed with flood-impact terms
+    - Compute semantic similarity for expanded words
+    - Retain terms with similarity > 0.6
+    - Final expanded keyword set = 118 terms
+
+3.4 Stage 4 — Sentence-level filtering
+    FOR each sentence:
+        IF sentence contains ANY expanded keyword:
+            mark as impact-relevant
+
+    Final impact-relevant sentences retained = 20,556
+
+
+============================================================
+4. MANUAL ANNOTATION AND DATA AUGMENTATION
+============================================================
+
+4.1 Manual annotation using Label Studio
+    - Sentences annotated: 1,875
+    - 16 impact categories
+    - Achieved ~97% inter-annotator agreement
+    - Two validation rounds corrected minor inconsistencies
+
+4.2 K-means clustering for diversity selection
+    - Select 1,125 diverse sentences for augmentation
+
+4.3 Data augmentation
+    - Backtranslation: 575 sentences
+    - Paraphrasing: 550 sentences
+
+4.4 Final labeled dataset
+    TOTAL_LABELED = 1,875 + 1,125 = 3,000 sentences
+
+
+============================================================
+5. BERT MODEL TRAINING PREPARATION
+============================================================
+
+5.1 Tokenization and label encoding
+    FOR each sentence in labeled dataset:
+        - Tokenize using BERT tokenizer (max_length = 128)
+        - Convert assigned categories to 16-dimensional binary vector
+
+5.2 Stratified dataset split
+    - TRAIN: 80%
+    - VALIDATION: 10%
+    - TEST: 10%
+    (Maintains proportional representation of all 16 categories)
+
+
+
+============================================================
+6. MODEL INITIALIZATION
+============================================================
+
+6.1 Base model:
+        model = "bert-base-uncased"
+
+6.2 Classification head:
+        - 16 sigmoid outputs (multi-label)
+
+6.3 Training components:
+        - Loss function: BCEWithLogitsLoss
+        - Optimizer: AdamW (learning rate = 2e-5)
+        - Scheduler: Linear warmup + decay
+        - Gradient clipping: 1.0
+
+
+
+============================================================
+7. MODEL TRAINING (7 EPOCHS)
+============================================================
+
+FOR epoch in {1 … 7}:
+    FOR each batch in TRAIN:
+        - outputs = model(batch.inputs)
+        - loss = BCEWithLogitsLoss(outputs, batch.labels)
+        - Backpropagate gradients
+        - optimizer.step()
+        - scheduler.step()
+
+    - Evaluate model on VALIDATION set
+    - Save checkpoint if validation loss improves
+
+BEST CHECKPOINT:
+    - Epoch 7
+    - Validation Loss = 0.060
+    - Precision = 0.85
+    - Recall = 0.90
+    - F1 Score = 0.87
+
+
+============================================================
+8. PREDICTING IMPACT CATEGORIES FOR ALL SENTENCES
+============================================================
+
+FOR each sentence in 20,556 filtered sentences:
+    - Tokenize sentence
+    - Predict 16-category probabilities using trained BERT
+    - Assign label k IF probability(k) > 0.5
+    - Store predicted labels
+
+RESULT:
+    - Classified sentences = 12,372
+    - Total assigned impact labels = 18,245
+    - Average labels per sentence ≈ 1.47
+
+
+
+============================================================
+9. LOCATION EXTRACTION USING CUSTOM GAZETTEER
+============================================================
+
+9.1 Build Houston Gazetteer
+    - 88 Super Neighborhoods (SNs)
+    - SN-specific landmarks & local place names
+
+9.2 Fuzzy-match location strings
+    FOR each article:
+        - Search gazetteer terms in article title
+        - Search gazetteer terms in article body
+        - Extract matching SN(s)
+
+9.3 Assign locations to sentences
+    IF article contains SN Z:
+        assign SN Z to ALL its impact sentences
+
+    IF no SN found:
+        - Exclude article from spatial analysis
+
+
+
+============================================================
+10. SPATIAL AND TEMPORAL AGGREGATION
+============================================================
+
+10.1 Article-level aggregation
+    FOR each article:
+        - Sum labels across its impact sentences
+
+10.2 Super Neighborhood–level aggregation
+    FOR each SN:
+        - Aggregate total impact labels across mapped articles
+        - Compute raw counts for all 16 impact categories
+        - Compute normalized flood impact:
+              NFI = log(1 + x) / log(1 + xmax)
+
+10.3 Temporal aggregation
+    FOR each impact:
+        - Use publication date of parent article
+        - Aggregate impacts daily, monthly, and yearly
+
+
+
+============================================================
+FINAL OUTPUTS
+============================================================
+
+- Sentence-level flood impact predictions   
+- SN-level normalized flood impact maps  
+- Impact category distributions  
+- Temporal evolution of impacts (general + Hurricane Harvey)  
+- Multidimensional analyses:
+      • Correlation clusters  
+      • Entropy–frequency relationships  
+
+
+============================================================
+END OF Supplementary Code S1
+============================================================
